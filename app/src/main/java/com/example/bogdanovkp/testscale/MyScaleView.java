@@ -5,11 +5,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import java.text.DateFormat;
@@ -31,6 +30,7 @@ public class MyScaleView extends View {
     private int endPoint = 0;
     private Paint rulerPaint;
     private Paint textPaint;
+    private Paint paintRectGreen;
     private int ratio = 90;
     private int maxRatio = 90;
     private int scale = 1;
@@ -58,6 +58,10 @@ public class MyScaleView extends View {
         textPaint.setAntiAlias(true);
         textPaint.setTextSize(context.getResources().getDimension(R.dimen.txt_size));
 
+        paintRectGreen = new Paint();
+        paintRectGreen.setColor(ContextCompat.getColor(context, R.color.green));
+        paintRectGreen.setStyle(Paint.Style.FILL);
+
     }
 
     private void init(){
@@ -78,10 +82,9 @@ public class MyScaleView extends View {
     protected void onDraw(Canvas canvas) {
         startingPoint = 0;
 
-        for (int i = 0; i <= width * pxmm; i++){
+        for (int i = 0; i <= width; i++){
             int size = (i % 6 == 0) ? lineLarge : (i % 3 == 0) ? lineMedium : lineSmall;
             canvas.drawLine(startingPoint, endPoint + size, startingPoint, endPoint, rulerPaint);
-            startingPoint = startingPoint + pxmm;
 
             if (size == lineLarge){
                 Calendar calendar = Calendar.getInstance();
@@ -93,11 +96,14 @@ public class MyScaleView extends View {
                 DateFormat df = new SimpleDateFormat("H:mm");
                 String date = df.format(calendar.getTime());
                 if (hour * 60 + minute >= 600){
-                    canvas.drawText(date, startingPoint - pxmm * 3, endPoint + size + textPaint.getTextSize(), textPaint);
-                }else {
                     canvas.drawText(date, startingPoint - pxmm * 2, endPoint + size + textPaint.getTextSize(), textPaint);
+                }else {
+                    canvas.drawText(date, startingPoint - pxmm, endPoint + size + textPaint.getTextSize(), textPaint);
                 }
             }
+            canvas.drawRect(startingPoint, height/2, (startingPoint + pxmm), height, paintRectGreen);
+
+            startingPoint = startingPoint + pxmm;
         }
     }
 
@@ -105,7 +111,7 @@ public class MyScaleView extends View {
         if (scale >= SCALE_MIN && scale < SCALE_MAX){
             scale += 1;
             ratio = ratio / 2;
-            if (ratio < 1){
+            if (ratio < SCALE_MIN){
                 ratio = 1;
             }
             invalidate();
